@@ -21,4 +21,12 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Commands\Auth\" />
+	  <Folder Include="Commands\Bookings\" />
+	  <Folder Include="Commands\Clients\" />
+	  <Folder Include="Commands\Tours\" />
+	  <Folder Include="Config\" />
+	</ItemGroup>
 </Project>

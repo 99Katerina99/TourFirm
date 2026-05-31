@@ -68,7 +68,8 @@ class Program
                 if (bytesRead == 0) break; // Клиент отключился
 
                 string request = Encoding.UTF8.GetString(buffer, 0, bytesRead).Trim();
-                Console.WriteLine($"📥 Запрос: {request}");
+                request = request.Trim('\uFEFF'); // ✅ Удаляем BOM, если он прилетел
+                Console.WriteLine($" Запрос: {request}");
 
                 string response = ProcessCommand(request);
                 Console.WriteLine($"📤 Ответ: {response}\n");
