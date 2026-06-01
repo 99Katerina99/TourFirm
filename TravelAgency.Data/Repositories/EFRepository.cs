@@ -1,16 +1,19 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using TravelAgency.Core.Interfaces;
-using TravelAgency.Data.DbContext;
+
+// 🔥 ВАЖНО: Создаём алиас, чтобы отличать наш контекст от класса из EF Core
+using AppDbContext = TravelAgency.Data.DbContext.TravelAgencyDbContext;
 
 namespace TravelAgency.Data.Repositories;
 
 public class EfRepository<T> : IRepository<T> where T : class
 {
-    private readonly TravelAgencyDbContext _context;
+    // 🔥 Используем алиас AppDbContext вместо простого DbContext
+    private readonly AppDbContext _context;
     private readonly DbSet<T> _dbSet;
 
-    public EfRepository(TravelAgencyDbContext context)
+    public EfRepository(AppDbContext context)
     {
         _context = context;
         _dbSet = context.Set<T>();

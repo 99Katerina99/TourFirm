@@ -2,7 +2,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Configuration;
-using TravelAgency.Data.DbContext;
+using Microsoft.EntityFrameworkCore;
+
+// 🔥 Алиас для пространства имён с нашим контекстом
+using AppDb = TravelAgency.Data.DbContext;
+
 using TravelAgency.Data.Repositories;
 using TravelAgency.Server.Commands;
 using TravelAgency.Server.Services;
@@ -14,7 +18,10 @@ namespace TravelAgency.Server;
 class Program
 {
     private static string _connectionString = string.Empty;
-    private static TravelAgencyDbContext _dbContext = null!;
+
+    // 🔥 Используем алиас в объявлении переменной
+    private static AppDb.TravelAgencyDbContext _dbContext = null!;
+
     private static IRepository<User> _userRepo = null!;
     private static IRepository<Tour> _efTourRepo = null!;
     private static IRepository<Tour> _sqlTourRepo = null!;
@@ -27,10 +34,12 @@ class Program
         // 1. Конфигурация и БД
         _connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"]?.ConnectionString
                             ?? "Data Source=travel_agency.db;";
-        _dbContext = new TravelAgencyDbContext(_connectionString);
-        await _dbContext.Database.EnsureCreatedAsync(); // Создаст БД и таблицы при первом запуске
 
-        // 2. Репозитории
+        // 🔥 Используем алиас при создании
+        _dbContext = new AppDb.TravelAgencyDbContext(_connectionString);
+        await _dbContext.Database.EnsureCreatedAsync();
+
+        // 2. Репозитории — передаём контекст с алиасом
         _userRepo = new EfRepository<User>(_dbContext);
         _efTourRepo = new EfRepository<Tour>(_dbContext);
         _sqlTourRepo = new SqlTourRepository(_connectionString);
@@ -42,7 +51,7 @@ class Program
         var port = int.Parse(ConfigurationManager.AppSettings["ServerPort"] ?? "8888");
         var server = new TcpListener(IPAddress.Any, port);
         server.Start();
-        Console.WriteLine($" Сервер запущен на порту {port}. Ожидание подключений...\n");
+        Console.WriteLine($"🚀 Сервер запущен на порту {port}. Ожидание подключений...\n");
 
         // 5. Цикл приёма клиентов
         while (true)
@@ -68,8 +77,8 @@ class Program
                 if (bytesRead == 0) break; // Клиент отключился
 
                 string request = Encoding.UTF8.GetString(buffer, 0, bytesRead).Trim();
-                request = request.Trim('\uFEFF'); // ✅ Удаляем BOM, если он прилетел
-                Console.WriteLine($" Запрос: {request}");
+                request = request.Trim('\uFEFF'); // Удаляем BOM
+                Console.WriteLine($"📥 Запрос: {request}");
 
                 string response = ProcessCommand(request);
                 Console.WriteLine($"📤 Ответ: {response}\n");
