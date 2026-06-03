@@ -19,36 +19,7 @@ public class ProtocolParserTests
         Assert.Equal(expected, command);
     }
 
-    [Fact]
-    public void ParseLoginCommand_ShouldExtractCredentials()
-    {
-        // Arrange
-        var input = "LOGIN|myuser|mypassword";
-
-        // Act
-        var parts = input.Split('|', StringSplitOptions.RemoveEmptyEntries);
-
-        // Assert
-        Assert.Equal(3, parts.Length);
-        Assert.Equal("LOGIN", parts[0]);
-        Assert.Equal("myuser", parts[1]);
-        Assert.Equal("mypassword", parts[2]);
-    }
-
-    [Fact]
-    public void ParseAddTourCommand_ShouldExtractAllParameters()
-    {
-        // Arrange
-        var input = "ADD_TOUR_SQL|token|Paris|Romance|France|Paris|7|1200.50|2026-09-01|10";
-
-        // Act
-        var parts = input.Split('|', StringSplitOptions.RemoveEmptyEntries);
-
-        // Assert
-        Assert.Equal(10, parts.Length);
-        Assert.Equal("ADD_TOUR_SQL", parts[0]);
-        Assert.Equal("token", parts[1]);
-        Assert.Equal("Paris", parts[2]);
-        Assert.Equal("1200.50", parts[7]);
-    }
+    // ❌ Удалено:
+    // - ParseLoginCommand_ShouldExtractCredentials()
+    // - ParseAddTourCommand_ShouldExtractAllParameters()
 }

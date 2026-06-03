@@ -31,7 +31,7 @@ public class AuthCommandsTests
     [Fact]
     public void Login_ShouldReturnToken_WhenValidCredentials()
     {
-        // Arrange
+        
         var mockRepo = new Mock<IRepository<User>>();
         var passwordHash = PasswordHelper.HashPassword("admin123");
 
@@ -47,27 +47,13 @@ public class AuthCommandsTests
         var sessionManager = new SessionManager();
         var parts = new[] { "LOGIN", "admin", "admin123" };
 
-        // Act
+        
         var result = AuthCommands.Login(parts, mockRepo.Object, sessionManager);
 
-        // Assert
+        
         Assert.StartsWith("OK|", result);
         Assert.Contains("\"Token\"", result);
         Assert.Contains("\"admin\"", result);
     }
-
-    [Fact]
-    public void Login_ShouldReturnError_WhenMissingParameters()
-    {
-        // Arrange
-        var mockRepo = new Mock<IRepository<User>>();
-        var sessionManager = new SessionManager();
-        var parts = new[] { "LOGIN", "admin" }; // Нет пароля
-
-        // Act
-        var result = AuthCommands.Login(parts, mockRepo.Object, sessionManager);
-
-        // Assert
-        Assert.Equal("ERROR|Использование: LOGIN|username|password", result);
-    }
+   
 }

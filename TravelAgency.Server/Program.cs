@@ -26,7 +26,8 @@ class Program
     private static IRepository<Tour> _efTourRepo = null!;
     private static IRepository<Tour> _sqlTourRepo = null!;
     private static readonly SessionManager _sessionManager = new();
-
+    private static IRepository<Route> _routeRepo = null!;
+    private static IRepository<Client> _clientRepo = null!;
     static async Task Main(string[] args)
     {
         Console.WriteLine("⏳ Инициализация сервера...");
@@ -38,6 +39,8 @@ class Program
         // 🔥 Используем алиас при создании
         _dbContext = new AppDb.TravelAgencyDbContext(_connectionString);
         await _dbContext.Database.EnsureCreatedAsync();
+
+        await InitializeDatabaseAsync(_dbContext);
 
         // 2. Репозитории — передаём контекст с алиасом
         _userRepo = new EfRepository<User>(_dbContext);
@@ -52,6 +55,8 @@ class Program
         var server = new TcpListener(IPAddress.Any, port);
         server.Start();
         Console.WriteLine($"🚀 Сервер запущен на порту {port}. Ожидание подключений...\n");
+        _routeRepo = new EfRepository<Route>(_dbContext);
+        _clientRepo = new EfRepository<Client>(_dbContext);
 
         // 5. Цикл приёма клиентов
         while (true)
@@ -62,6 +67,7 @@ class Program
             // Обрабатываем каждого клиента в отдельном потоке
             _ = HandleClientAsync(client);
         }
+
     }
 
     private static async Task HandleClientAsync(TcpClient client)
@@ -117,7 +123,21 @@ class Program
 
             // Туры: SQL версия
             "GET_TOURS_SQL" => TourCommands.GetToursSql(parts, _sqlTourRepo, _sessionManager),
-            "ADD_TOUR_SQL" => TourCommands.AddTourSql(parts, _sqlTourRepo, _sessionManager),
+            "ADD_TOUR_SQL" => TourCommands.AddTourSql(parts, _connectionString, _sessionManager),
+
+            // 🔥 НОВЫЕ команды для ТЗ
+            "GET_ROUTES" => TourCommands.GetRoutes(parts, _routeRepo, _sessionManager),
+            "REGISTER_CLIENT" => TourCommands.RegisterClient(parts, _clientRepo, _efTourRepo, _sessionManager),
+
+            "CREATE_TOUR_FULL" => TourCommands.CreateTourFull(parts, _connectionString, _sessionManager),
+            "GET_SUPPLIERS" => TourCommands.GetSuppliers(parts, _connectionString, _sessionManager),
+            "GET_CLIENTS" => TourCommands.GetClients(parts, _connectionString, _sessionManager),
+
+            "GET_SUPPLIER_CONTRACTS" => TourCommands.GetSupplierContracts(parts, _connectionString, _sessionManager),
+
+            "GET_TOURS_EXTENDED" => TourCommands.GetToursExtended(parts, _connectionString, _sessionManager),
+
+            "DELETE_TOUR" => TourCommands.DeleteTour(parts, _connectionString, _sessionManager),
 
             _ => "ERROR|Неизвестная команда"
         };
@@ -142,5 +162,54 @@ class Program
     {
         var bytes = Encoding.UTF8.GetBytes(response + "\n");
         await stream.WriteAsync(bytes, 0, bytes.Length);
+    }
+    private static async Task InitializeDatabaseAsync(AppDb.TravelAgencyDbContext context)
+    {
+        // Проверяем, создана ли уже таблица Routes
+        var tableExists = await context.Database.ExecuteSqlRawAsync(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='Routes'");
+
+        if (tableExists == 0) // Таблицы нет — создаём
+        {
+            Console.WriteLine(" Создание таблиц по SQL-скрипту...");
+
+            var sql = @"
+            CREATE TABLE IF NOT EXISTS Routes (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Name TEXT NOT NULL,
+                Description TEXT
+            );
+            
+            CREATE TABLE IF NOT EXISTS Clients (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                LastName TEXT NOT NULL,
+                FirstName TEXT NOT NULL,
+                MiddleName TEXT,
+                PassportSeries TEXT NOT NULL,
+                PassportNumber TEXT NOT NULL,
+                PassportIssuedBy TEXT,
+                PassportIssuedDate DATE,
+                Phone TEXT,
+                Email TEXT UNIQUE,
+                RegistrationDate DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+            
+            -- ... остальные CREATE TABLE из твоего скрипта ...
+            
+            CREATE TABLE IF NOT EXISTS Bookings (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ClientContractId INTEGER NOT NULL,
+                SupplierContractId INTEGER NOT NULL,
+                BookingNum TEXT NOT NULL UNIQUE,
+                BookingDate DATE DEFAULT CURRENT_DATE,
+                Status TEXT DEFAULT 'Забронировано',
+                FOREIGN KEY (ClientContractId) REFERENCES ClientContracts(Id),
+                FOREIGN KEY (SupplierContractId) REFERENCES SupplierContracts(Id)
+            );
+        ";
+
+            await context.Database.ExecuteSqlRawAsync(sql);
+            Console.WriteLine("✅ Таблицы созданы");
+        }
     }
 }

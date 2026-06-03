@@ -3,13 +3,18 @@ namespace TravelAgency.Core.Entities;
 public class Tour
 {
     public int Id { get; set; }
+    public int RouteId { get; set; }              // FK на Routes
     public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public string Country { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
-    public int DurationDays { get; set; }
-    public decimal Price { get; set; }
+    public string TourType { get; set; } = string.Empty;  // "Круизный", "Курортный"...
+    public string Destination { get; set; } = string.Empty;  // "Франция, Париж"
     public DateTime StartDate { get; set; }
-    public int AvailableSeats { get; set; }
-    public bool IsActive { get; set; } = true;
+    public DateTime EndDate { get; set; }
+    public decimal Price { get; set; }
+    public int MaxSeats { get; set; }
+    public string Description { get; set; } = string.Empty;
+
+    // Навигационное свойство (опционально)
+    public Route? Route { get; set; }
+    public ICollection<ClientContract> ClientContracts { get; set; } = new List<ClientContract>();
+    public ICollection<SupplierContract> SupplierContracts { get; set; } = new List<SupplierContract>();
 }

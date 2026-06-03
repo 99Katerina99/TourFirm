@@ -1,19 +1,12 @@
-namespace TravelAgency.Core.Entities;
-
 public class Booking
 {
     public int Id { get; set; }
-    public int ClientId { get; set; }
-    public int TourId { get; set; }
-    public int UserId { get; set; }
-
+    public int ClientContractId { get; set; }
+    public int SupplierContractId { get; set; }
+    public string BookingNum { get; set; }
     public DateTime BookingDate { get; set; } = DateTime.UtcNow;
-    public int PersonsCount { get; set; } = 1;
-    public decimal TotalPrice { get; set; }
-    public string Status { get; set; } = "pending"; // pending | confirmed | cancelled
+    public string Status { get; set; } = "Забронировано";
 
-    // ✅ НАВИГАЦИОННЫЕ СВОЙСТВА (обязательны для EF Core связей)
-    public Client? Client { get; set; }
-    public Tour? Tour { get; set; }
-    public User? User { get; set; }
+    public ClientContract ClientContract { get; set; }
+    public SupplierContract SupplierContract { get; set; }
 }

@@ -1,11 +1,20 @@
-namespace TravelAgency.Core.Entities;
-
 public class Client
 {
     public int Id { get; set; }
-    public string FullName { get; set; } = string.Empty;
-    public string Phone { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string PassportData { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string LastName { get; set; }
+    public string FirstName { get; set; }
+    public string MiddleName { get; set; }
+
+    // Паспортные данные (детализировано)
+    public string PassportSeries { get; set; }      // например "4512"
+    public string PassportNumber { get; set; }       // например "123456"
+    public string PassportIssuedBy { get; set; }     // кем выдан
+    public DateTime? PassportIssuedDate { get; set; } // когда выдан
+
+    public string Phone { get; set; }
+    public string Email { get; set; }
+    public DateTime RegistrationDate { get; set; } = DateTime.UtcNow;
+
+    // Навигационные свойства
+    public ICollection<Request> Requests { get; set; }
 }
